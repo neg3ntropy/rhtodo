@@ -1,0 +1,50 @@
+# see https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md
+
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Description: rhtodo
+Resources:
+
+  NotificationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../dist/TodoCommand.zip
+      Handler: index.handler
+      Runtime: nodejs8.10
+      MemorySize: 128
+      Timeout: 30
+      Events:
+        Get:
+          Type: 'Api'
+          Properties:
+            Path: '/todo'
+            Method: 'get'
+      Environment:
+        Variables:
+          EventsTable: !Ref EventsTable
+
+  EventsTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: aggregateId
+          AttributeType: S
+        - AttributeName: sequence
+          AttributeType: N
+      KeySchema:
+        - AttributeName: aggregateId
+          KeyType: HASH
+        - AttributeName: sequence
+          KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: '1'
+        WriteCapacityUnits: '1'
+      TableName: !Join
+        - ''
+        - - !Ref 'AWS::StackName'
+          - '-Events'
+
+Outputs:
+  ApiRoot:
+    Description: "API root"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"

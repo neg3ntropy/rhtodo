@@ -3,26 +3,43 @@
   "author": "Andrea Ratto",
   "version": "0.0.0",
   "license": "Apache-2.0",
-  "main": "dist/main.js",
   "files": [
     "dist"
   ],
   "scripts": {
     "lint": "tslint --project tsconfig.json -t codeFrame 'src/**/*.ts' 'test/**/*.ts'",
+    "compile": "tsc",
     "prebuild": "rimraf dist",
-    "build": "tsc",
-    "test": "mocha --require ts-node/register test/**/*.spec.ts"
+    "build": "gulp",
+    "test": "mocha --require ts-node/register test/unit/**/*.spec.ts",
+    "test-integration": "mocha --require ts-node/register --timeout 60000 test/integration/**/*.spec.ts"
+  },
+  "dependencies": {
+    "aws-sdk": "2.186.0",
+    "uuid": "3.2.1"
   },
   "devDependencies": {
     "@types/node": "8.10.25",
     "@types/mocha": "5.2.5",
     "@types/expect.js": "0.3.29",
+    "@types/uuid": "3.4.3",
     "expect.js": "0.3.1",
     "mocha": "5.2.0",
     "rimraf": "2.6.2",
     "ts-node": "7.0.1",
     "tslint": "5.11.0",
-    "typescript": "3.1.3"
+    "typescript": "3.1.3",
+    "typemoq": "2.1.0",
+    "@types/aws-lambda": "0.0.35",
+    "del": "3.0.0",
+    "uglifyjs-webpack-plugin": "1.3.0",
+    "gulp": "3.9.1",
+    "gulp-typescript": "4.0.2",
+    "gulp-copy": "4.0.0",
+    "gulp-rename": "1.4.0",
+    "gulp-zip": "4.2.0",
+    "webpack": "4.19.0",
+    "webpack-stream": "5.1.1"
   },
   "engines": {
     "node": ">=8.10.0"
