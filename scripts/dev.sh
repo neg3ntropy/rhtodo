@@ -69,11 +69,9 @@ invoke)
         exit 3
     fi
 
-    # Search for the ID of the function assuming it was named something like FxnFunction where Fxn is the uppercased form of the dir name.
-    FXN_UPPERCASE="$(tr '[:lower:]' '[:upper:]' <<< ${FXN:0:1})${FXN:1}"
-    FXN_ID="$(aws cloudformation describe-stack-resources --stack-name $STACK_NAME --query "StackResources[?ResourceType==\`AWS::Lambda::Function\`&&starts_with(LogicalResourceId,\`$FXN_UPPERCASE\`)].PhysicalResourceId" --output text)"
+    FXN_ID="$(aws cloudformation describe-stack-resources --stack-name $STACK_NAME --query "StackResources[?ResourceType==\`AWS::Lambda::Function\`&&starts_with(LogicalResourceId,\`$FXN\`)].PhysicalResourceId" --output text)"
     if [ $? -ne 0 ]; then
-        echo "Could not discover the LogicalResourceId of $FXN.  Check that there is a ${FXN_UPPER_CAMEL_CASE}Function Resource inside infrastructure/sam.yaml and check that it has been deployed."
+        echo "Could not discover the LogicalResourceId of $FXN. Check that there is a ${FXN}Function Resource inside infrastructure/sam.yaml and check that it has been deployed."
         exit 1
     fi
 
@@ -95,17 +93,15 @@ upload)
         exit 2
     fi
 
-    npm run build -- --env.fxn=$FXN
+    npm run build # -- --env.fxn=$FXN
 
-    # Search for the ID of the function assuming it was named something like FxnFunction where Fxn is the uppercased form of the dir name.
-    FXN_UPPERCASE="$(tr '[:lower:]' '[:upper:]' <<< ${FXN:0:1})${FXN:1}"
-    FXN_ID="$(aws cloudformation describe-stack-resources --stack-name $STACK_NAME --query "StackResources[?ResourceType==\`AWS::Lambda::Function\`&&starts_with(LogicalResourceId,\`$FXN_UPPERCASE\`)].PhysicalResourceId" --output text)"
+    FXN_ID="$(aws cloudformation describe-stack-resources --stack-name $STACK_NAME --query "StackResources[?ResourceType==\`AWS::Lambda::Function\`&&starts_with(LogicalResourceId,\`$FXN\`)].PhysicalResourceId" --output text)"
     if [ $? -ne 0 ]; then
-        echo "Could not discover the LogicalResourceId of $FXN.  Check that there is a ${FXN_UPPER_CAMEL_CASE}Function Resource inside infrastructure/sam.yaml and check that it has been deployed."
+        echo "Could not discover the LogicalResourceId of $FXN. Check that there is a ${FXN}Function Resource inside infrastructure/sam.yaml and check that it has been deployed."
         exit 1
     fi
 
-    aws lambda update-function-code --function-name $FXN_ID --zip-file fileb://./dist/$FXN/$FXN.zip
+    aws lambda update-function-code --function-name $FXN_ID --zip-file fileb://./dist/$FXN.zip
     ;;
 *)
     echo "Error: unknown command name '$COMMAND'."
