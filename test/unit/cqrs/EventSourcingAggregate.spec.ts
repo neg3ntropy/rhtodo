@@ -1,7 +1,9 @@
 import expect = require("expect.js");
+import { IMock, Mock } from "typemoq";
 import { EventSourcingAggregate } from "../../../src/cqrs/EventSourcingAggregate";
 import { ICommand } from "../../../src/cqrs/ICommand";
 import { IEvent } from "../../../src/cqrs/IEvent";
+import { UuidFactory } from "../../../src/cqrs/UuidFactory";
 
 describe("Given an EventSourcedAggregate", () => {
 
@@ -31,9 +33,12 @@ describe("Given an EventSourcedAggregate", () => {
     }
 
     let sut: PositiveCounter;
+    let uuidFactoryMock: IMock<UuidFactory>;
 
     beforeEach(() => {
-        sut = new PositiveCounter("test");
+        uuidFactoryMock = Mock.ofType<UuidFactory>();
+        uuidFactoryMock.setup(m => m.timeUuid()).returns(() => "timeUuid");
+        sut = new PositiveCounter("test", uuidFactoryMock.object);
     });
 
     context("When processing a valid command", () => {
@@ -44,7 +49,7 @@ describe("Given an EventSourcedAggregate", () => {
 
         it("Should track uncommitted events", () => {
             expect(sut.uncommittedEvents).to.eql([
-                { name: "CountChanged", aggregateId: "test", sequence: 1, delta: 1 }
+                { name: "CountChanged", aggregateId: "test", sequence: 1, timeUuid: "timeUuid", delta: 1 }
             ]);
         });
 

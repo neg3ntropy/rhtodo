@@ -1,5 +1,6 @@
 import { IEvent, IPublishedEvent } from "./IEvent";
 import { ICommand } from "./ICommand";
+import { UuidFactory } from "./UuidFactory";
 
 interface Sourced<T> {
     [onMethod: string]: (payload: T) => void | undefined;
@@ -11,7 +12,7 @@ export abstract class EventSourcingAggregate {
     private _uncommittedEvents: IPublishedEvent[] = [];
     private inTransaction = false;
 
-    constructor(public readonly id: string) {
+    constructor(public readonly id: string, protected readonly uuidFactory: UuidFactory = UuidFactory.defaultInstance) {
     }
 
     public get uncommittedEvents(): ReadonlyArray<IPublishedEvent> {
@@ -33,6 +34,7 @@ export abstract class EventSourcingAggregate {
         if (this.inTransaction) {
             event.aggregateId = this.id;
             event.sequence = this.version;
+            event.timeUuid = this.uuidFactory.timeUuid();
             this._uncommittedEvents.push(event as IPublishedEvent);
         }
         this.dispatch(event);

@@ -14,10 +14,25 @@ describe("Given a DynamoEventStore", () => {
     const dynamo = new DocumentClient();
     let testEvent: TestEvent;
 
-    beforeEach(() => {
-        sut = new DynamoEventStore(dynamo, `rhtodo-dev-${process.env.USER}-Events`);
-        testEvent = {aggregateId: "test", name: "TestEvent", sequence: 0, test: "zero"};
+    beforeEach(async () => {
+        const table = `rhtodo-dev-${process.env.USER}-Events`;
+        await cleanDb(table);
+        sut = new DynamoEventStore(dynamo, table);
+        testEvent = {aggregateId: "test", name: "TestEvent", sequence: 0, timeUuid: "timeUuid", test: "zero"};
     });
+
+    async function cleanDb(table: string): Promise<void> {
+        const query: DocumentClient.QueryInput = {
+            TableName: table,
+            KeyConditionExpression: `aggregateId = :aggregateId`,
+            ExpressionAttributeValues: {":aggregateId":  "test"}
+        };
+        const results = await dynamo.query(query).promise();
+        const deletes = (results.Items || [])
+            .map<DocumentClient.Key>(e => ({aggregateId: e.aggregateId, sequence: e.sequence}))
+            .map(k => dynamo.delete({TableName: table, Key: k }).promise());
+        await Promise.all(deletes);
+    }
 
     context("When a new event is stored", () => {
 

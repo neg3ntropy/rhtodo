@@ -1,10 +1,12 @@
 export interface IEvent {
+    readonly name: string;
     aggregateId?: string;
     sequence?: number;
-    readonly name: string;
+    timeUuid?: string;
 }
 
 export interface IPublishedEvent extends IEvent {
     readonly aggregateId: string;
     readonly sequence: number;
+    readonly timeUuid: string;
 }
