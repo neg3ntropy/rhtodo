@@ -1,6 +1,6 @@
 import expect = require("expect.js");
 import { IMock, Mock } from "typemoq";
-import { EventSourcingAggregate } from "../../../src/cqrs/EventSourcingAggregate";
+import { EventSourcedAggregate } from "../../../src/cqrs/EventSourcedAggregate";
 import { ICommand } from "../../../src/cqrs/ICommand";
 import { IEvent } from "../../../src/cqrs/IEvent";
 import { UuidFactory } from "../../../src/cqrs/UuidFactory";
@@ -17,7 +17,7 @@ describe("Given an EventSourcedAggregate", () => {
         delta: number;
     }
 
-    class PositiveCounter extends EventSourcingAggregate {
+    class PositiveCounter extends EventSourcedAggregate {
 
         public count = 0;
 

@@ -6,7 +6,7 @@ interface Sourced<T> {
     [onMethod: string]: (payload: T) => void | undefined;
 }
 
-export abstract class EventSourcingAggregate {
+export abstract class EventSourcedAggregate {
 
     private _version = 0;
     private _uncommittedEvents: IPublishedEvent[] = [];

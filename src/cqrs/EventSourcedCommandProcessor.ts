@@ -1,11 +1,11 @@
 import { ICommandProcessor, CommandAck } from "./ICommandProcessor";
 import { ICommand } from "./ICommand";
-import { EventSourcingAggregateRepository } from "./EventSourcingAggregateRepository";
-import { EventSourcingAggregate } from "./EventSourcingAggregate";
+import { EventSourcedAggregateRepository } from "./EventSourcedAggregateRepository";
+import { EventSourcedAggregate } from "./EventSourcedAggregate";
 
-export class EventSourcingCommandProcessor implements ICommandProcessor {
+export class EventSourcedAggregateCommandProcessor implements ICommandProcessor {
 
-    constructor(private readonly repository: EventSourcingAggregateRepository<EventSourcingAggregate>) {}
+    constructor(private readonly repository: EventSourcedAggregateRepository<EventSourcedAggregate>) {}
 
     public async process(command: ICommand): Promise<CommandAck> {
         try {

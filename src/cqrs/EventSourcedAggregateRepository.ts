@@ -1,7 +1,7 @@
-import { EventSourcingAggregate } from "./EventSourcingAggregate";
+import { EventSourcedAggregate } from "./EventSourcedAggregate";
 import { IEventStore } from "./IEventStore";
 
-export abstract class EventSourcingAggregateRepository<T extends EventSourcingAggregate> {
+export abstract class EventSourcedAggregateRepository<T extends EventSourcedAggregate> {
 
     constructor(
         private readonly eventStore: IEventStore) {
