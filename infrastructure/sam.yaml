@@ -12,13 +12,40 @@ Resources:
       Handler: index.handler
       Runtime: nodejs8.10
       MemorySize: 128
-      Timeout: 30
+      Timeout: 15
       Events:
         Post:
           Type: 'Api'
           Properties:
             Path: '/todo'
             Method: 'post'
+      Environment:
+        Variables:
+          EventsTable: !Ref EventsTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EventsTable
+
+  TodoReadModelUpdater:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../dist/TodoReadModelUpdater.zip
+      Handler: index.handler
+      Runtime: nodejs8.10
+      MemorySize: 128
+      Timeout: 30
+      Policies:
+        - AWSConfigRulesExecutionRole
+      Events:
+        DynamoDB1:
+          Type: DynamoDB
+          Properties:
+            Stream:
+              'Fn::GetAtt':
+                - EventsTable
+                - StreamArn
+            StartingPosition: TRIM_HORIZON
+            BatchSize: 100
       Environment:
         Variables:
           EventsTable: !Ref EventsTable
@@ -42,6 +69,8 @@ Resources:
       ProvisionedThroughput:
         ReadCapacityUnits: '1'
         WriteCapacityUnits: '1'
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
       TableName: !Join
         - ''
         - - !Ref 'AWS::StackName'

@@ -1,10 +1,7 @@
-import { IEvent, IPublishedEvent } from "./IEvent";
 import { ICommand } from "./ICommand";
+import { IEvent, IPublishedEvent } from "./IEvent";
+import { dispatch } from "./Utils";
 import { UuidFactory } from "./UuidFactory";
-
-interface Sourced<T> {
-    [onMethod: string]: (payload: T) => void | undefined;
-}
 
 export abstract class EventSourcedAggregate {
 
@@ -25,7 +22,7 @@ export abstract class EventSourcedAggregate {
 
     public handleCommand<T extends ICommand>(command: T): void {
         this.inTransaction = true;
-        this.dispatch(command);
+        dispatch(this, command);
         this.inTransaction = false;
     }
 
@@ -37,19 +34,11 @@ export abstract class EventSourcedAggregate {
             event.timeUuid = this.uuidFactory.timeUuid();
             this._uncommittedEvents.push(event as IPublishedEvent);
         }
-        this.dispatch(event);
+        dispatch(this, event);
     }
 
     public commit() {
         this._uncommittedEvents = [];
     }
 
-    private dispatch<T extends {name: string}>(payload: T): void {
-        const handlerName = `on${payload.name}`;
-        const handler = (this as unknown as Sourced<T>)[handlerName];
-        if (typeof handler !== "function") {
-            throw new Error(`Not implemented: ${handlerName}`);
-        }
-        handler.bind(this)(payload);
-    }
 }
