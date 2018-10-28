@@ -12,7 +12,8 @@
     "prebuild": "rimraf dist",
     "build": "gulp",
     "test": "mocha --require ts-node/register test/unit/**/*.spec.ts",
-    "test-integration": "mocha --require ts-node/register --timeout 60000 test/integration/**/*.spec.ts"
+    "test-integration": "mocha --require ts-node/register --timeout 60000 test/integration/**/*.spec.ts",
+    "test-system": "mocha --require ts-node/register --timeout 60000 test/system/**/*.spec.ts"
   },
   "dependencies": {
     "aws-sdk": "2.186.0",
@@ -39,7 +40,11 @@
     "gulp-rename": "1.4.0",
     "gulp-zip": "4.2.0",
     "webpack": "4.19.0",
-    "webpack-stream": "5.1.1"
+    "webpack-stream": "5.1.1",
+    "@types/request": "2.47.0",
+    "@types/request-promise-native": "1.0.13",
+    "request": "2.83.0",
+    "request-promise-native": "1.0.5"
   },
   "engines": {
     "node": ">=8.10.0"
