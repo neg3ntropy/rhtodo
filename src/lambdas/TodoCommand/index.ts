@@ -4,10 +4,10 @@ import { EventSourcedAggregateCommandProcessor } from "../../cqrs/EventSourcedCo
 import { ICommand } from "../../cqrs/ICommand";
 import { DynamoEventStore } from "../../dynamo/DynamoEventStore";
 import { AppError } from "../../errorHandling/AppError";
-import { TodoRepository } from "../../todo/TodoRepository";
+import { TodoAggregateRepository } from "../../todo/command/TodoAggregateRepository";
 
 const dynamoEventStore = new DynamoEventStore(new DocumentClient(), process.env.EventsTable!);
-const aggregateRepository = new TodoRepository(dynamoEventStore);
+const aggregateRepository = new TodoAggregateRepository(dynamoEventStore);
 const commandProcessor = new EventSourcedAggregateCommandProcessor(aggregateRepository);
 
 function toCommand(evt: APIGatewayEvent): ICommand {

@@ -1,7 +1,7 @@
-import { EventSourcedAggregate } from "../cqrs/EventSourcedAggregate";
-import { BadRequestError } from "../errorHandling/InvalidRequestError";
+import { EventSourcedAggregate } from "../../cqrs/EventSourcedAggregate";
+import { BadRequestError } from "../../errorHandling/InvalidRequestError";
 import * as commands from "./TodoCommands";
-import * as events from "./TodoEvents";
+import * as events from "../TodoEvents";
 
 enum Status {
     NEW = "NEW",

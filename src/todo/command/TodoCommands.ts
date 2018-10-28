@@ -1,4 +1,4 @@
-import { ICommand } from "../cqrs/ICommand";
+import { ICommand } from "../../cqrs/ICommand";
 
 export interface TodoCreate extends ICommand {
     name: "TodoCreate";
