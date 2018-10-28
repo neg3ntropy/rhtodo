@@ -1,7 +1,7 @@
 import expect = require("expect.js");
 import { RequestResponse } from "request";
 import { UuidFactory } from "../../src/cqrs/UuidFactory";
-import { TestSetup } from "./TestSetup";
+import { SystemTestSetup } from "./SystemTestSetup";
 
 describe("Given the Todo API", () => {
 
@@ -17,7 +17,7 @@ describe("Given the Todo API", () => {
                 aggregateId: aggregateId,
                 title: "Test"
             };
-            createResponse = await TestSetup.todoApiClient.sendCommand(createCommand);
+            createResponse = await SystemTestSetup.todoApiClient.sendCommand(createCommand);
         });
 
         it("Should return an ok response", async () => {
@@ -34,7 +34,7 @@ describe("Given the Todo API", () => {
                     name: "TodoComplete",
                     aggregateId: aggregateId
                 };
-                completeResponse = await TestSetup.todoApiClient.sendCommand(completeCommand);
+                completeResponse = await SystemTestSetup.todoApiClient.sendCommand(completeCommand);
             });
 
             it("Should return an ok response", async () => {
@@ -47,7 +47,7 @@ describe("Given the Todo API", () => {
                     name: "TodoComplete",
                     aggregateId: aggregateId
                 };
-                const completeResponseTwice = await TestSetup.todoApiClient.sendCommand(completeCommand);
+                const completeResponseTwice = await SystemTestSetup.todoApiClient.sendCommand(completeCommand);
                 expect(completeResponseTwice.statusCode).to.be(400);
                 expect(completeResponseTwice.body).to.eql({
                     ok: false,
