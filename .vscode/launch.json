@@ -24,7 +24,8 @@
       "request": "launch",
       "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
       "env": {
-        "ACCEPTANCE_TESTS_ENV": "dev"
+        "AWS_PROFILE": "dev",
+        "AWS_REGION": "eu-west-1"
       },
       "args": [
          "-u", "tdd",

@@ -6,4 +6,4 @@ A ReST API for TODOs.
 
 * Node v8.10
 * npm 6.4.1
-* jq
+* aws cli 1.11.133
