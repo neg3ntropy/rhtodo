@@ -2,10 +2,10 @@
 
 AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
-Description: rhtodo
+Description: Really Hard TODO app
 Resources:
 
-  NotificationFunction:
+  TodoCommand:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ../dist/TodoCommand.zip
@@ -14,14 +14,17 @@ Resources:
       MemorySize: 128
       Timeout: 30
       Events:
-        Get:
+        Post:
           Type: 'Api'
           Properties:
             Path: '/todo'
-            Method: 'get'
+            Method: 'post'
       Environment:
         Variables:
           EventsTable: !Ref EventsTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EventsTable
 
   EventsTable:
     Type: 'AWS::DynamoDB::Table'

@@ -13,14 +13,14 @@ enum Status {
 export class TodoAggregate extends EventSourcedAggregate {
     private status = Status.NEW;
     private title!: string;
-    private description!: string;
+    private description?: string;
 
     protected onTodoCreate(command: commands.TodoCreate): void {
         this.assertStatus(Status.NEW);
         this.applyEvent<events.TodoCreated>({
             name: "TodoCreated",
             title: command.title,
-            description: command.description || ""
+            description: command.description
         });
     }
 
@@ -70,7 +70,7 @@ export class TodoAggregate extends EventSourcedAggregate {
 
     private assertStatus(...statuses: Status[]): void {
         if (!statuses.includes(this.status)) {
-            throw new BadRequestError("Invalid Todo status");
+            throw new BadRequestError(`Unacceptable command when status=${this.status}`);
         }
     }
 }

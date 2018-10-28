@@ -1,5 +1,6 @@
 import { EventSourcedAggregate } from "./EventSourcedAggregate";
 import { IEventStore } from "./IEventStore";
+import { ConcurrentUpdateError } from "../errorHandling/ConcurrentUpdateError";
 
 export abstract class EventSourcedAggregateRepository<T extends EventSourcedAggregate> {
 
@@ -18,7 +19,10 @@ export abstract class EventSourcedAggregateRepository<T extends EventSourcedAggr
 
     public async save(aggregate: T): Promise<void> {
         for (const e of aggregate.uncommittedEvents) {
-            this.eventStore.commit(e);
+            const commited = await this.eventStore.commit(e);
+            if (!commited) {
+                throw new ConcurrentUpdateError();
+            }
         }
         aggregate.commit();
     }

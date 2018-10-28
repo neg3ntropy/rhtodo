@@ -3,7 +3,7 @@ import { IEvent } from "../cqrs/IEvent";
 export interface TodoCreated extends IEvent {
     name: "TodoCreated";
     title: string;
-    description: string;
+    description?: string;
 }
 
 export interface TodoUpdated extends IEvent {

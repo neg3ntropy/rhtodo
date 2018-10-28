@@ -29,6 +29,7 @@ export class DynamoEventStore implements IEventStore {
     public async load(aggregateId: string): Promise<IPublishedEvent[]> {
         const query: DocumentClient.QueryInput = {
             TableName: this.table,
+            ConsistentRead: true,
             KeyConditionExpression: `aggregateId = :aggregateId`,
             ExpressionAttributeValues: {":aggregateId":  aggregateId}
         };
