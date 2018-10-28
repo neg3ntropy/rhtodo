@@ -13,3 +13,14 @@ export function dispatch<U, T extends {name: string}>(handler: unknown, payload:
         throw new Error(`Not implemented: ${handlerName}`);
     }
 }
+
+export function uidToDate(uuid: string): Date {
+    const split = uuid.split("-");
+    const timeString = [
+        split[2].substring(1),
+        split[1],
+        split[0]
+    ].join("");
+    const uuidTime = parseInt(timeString, 16) - 122192928000000000;
+    return new Date(Math.floor(uuidTime / 10000));
+}

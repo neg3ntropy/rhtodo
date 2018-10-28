@@ -26,10 +26,10 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: !Ref EventsTable
 
-  TodoReadModelUpdater:
+  TodoQueryModelUpdater:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../dist/TodoReadModelUpdater.zip
+      CodeUri: ../dist/TodoQueryModelUpdater.zip
       Handler: index.handler
       Runtime: nodejs8.10
       MemorySize: 128
@@ -48,10 +48,16 @@ Resources:
             BatchSize: 100
       Environment:
         Variables:
-          EventsTable: !Ref EventsTable
+          ElasticsearchDomainEndpoint: !GetAtt ElasticsearchDomain.DomainEndpoint
       Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref EventsTable
+        - Version: 2012-10-17
+          Statement:
+            - Effect: Allow
+              Action: es:*
+              Resource: !Join
+                - ''
+                - - !GetAtt ElasticsearchDomain.DomainArn
+                  - /*
 
   EventsTable:
     Type: 'AWS::DynamoDB::Table'
@@ -72,11 +78,33 @@ Resources:
       StreamSpecification:
         StreamViewType: NEW_IMAGE
       TableName: !Join
-        - ''
+        - '-'
         - - !Ref 'AWS::StackName'
-          - '-Events'
+          - 'Events'
+
+  ElasticsearchDomain:
+    Type: AWS::Elasticsearch::Domain
+    Properties:
+      DomainName: !Join
+        - '-'
+        - - !Ref 'AWS::StackName'
+          - 'search'
+      ElasticsearchVersion: '6.3'
+      ElasticsearchClusterConfig:
+        InstanceCount: '1'
+        InstanceType: 't2.small.elasticsearch'
+      EBSOptions:
+        EBSEnabled: 'true'
+        Iops: 0
+        VolumeSize: 10
+        VolumeType: standard
+      SnapshotOptions:
+        AutomatedSnapshotStartHour: '0'
 
 Outputs:
   ApiRoot:
     Description: "API root"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+  ElasticsearchDomainEndpoint:
+    Description: "Endpoint for Elasticsearch"
+    Value: !GetAtt ElasticsearchDomain.DomainEndpoint
