@@ -1,6 +1,6 @@
-import { IEvent } from "./IEvent";
+import { IPublishedEvent } from "./IEvent";
 
 export interface IEventStore {
-    commit(e: IEvent): Promise<boolean>;
-    load(streamId: string): Promise<IEvent[]>;
+    commit(e: IPublishedEvent): Promise<boolean>;
+    load(aggregateId: string): Promise<IPublishedEvent[]>;
 }

@@ -14,7 +14,7 @@ export abstract class EventSourcingAggregate {
     constructor(public readonly id: string) {
     }
 
-    public get uncommittedEvents(): ReadonlyArray<IEvent> {
+    public get uncommittedEvents(): ReadonlyArray<IPublishedEvent> {
         return this._uncommittedEvents;
     }
 
