@@ -1,23 +1,27 @@
 import expect = require("expect.js");
-import { RequestResponse } from "request";
-import { UuidFactory } from "../../src/cqrs/UuidFactory";
+import { FullResponse } from "request-promise-native";
+import { v4 as uuid } from "uuid";
 import { SystemTestSetup } from "./SystemTestSetup";
+import { TodoApiClient } from "./TodoApiClient";
 
 describe("Given the Todo API", () => {
 
     context("When a new Todo is created", () => {
 
-        let createResponse: RequestResponse;
+        let createResponse: FullResponse;
         let aggregateId: string;
+        let client: TodoApiClient;
 
         beforeEach(async () => {
-            aggregateId = UuidFactory.defaultInstance.uuid();
+            aggregateId = uuid();
             const createCommand = {
                 name: "TodoCreate",
                 aggregateId: aggregateId,
-                title: "Test"
+                title: "Test",
+                description: `blah blah ${aggregateId}`
             };
-            createResponse = await SystemTestSetup.todoApiClient.sendCommand(createCommand);
+            client = SystemTestSetup.todoApiClient;
+            createResponse = await client.sendCommand(createCommand);
         });
 
         it("Should return an ok response", async () => {
@@ -25,16 +29,49 @@ describe("Given the Todo API", () => {
             expect(createResponse.statusCode).to.be(200);
         });
 
+        context("When the change notification is received", () => {
+
+            beforeEach(async () => {
+                await new Promise(resolve => setTimeout(resolve, 2000)); // TODO websocket
+            });
+
+            it("Should be gettable", async () => {
+                const getResponse = await client.get(aggregateId);
+                expect(getResponse.statusCode).to.be(200);
+                const item = getResponse.body;
+                expect(item).to.have.property("createdAt");
+                expect(item).to.eql({
+                    title: "Test",
+                    completed: false,
+                    createdAt: item.createdAt,
+                    description: `blah blah ${aggregateId}`
+                });
+            });
+
+            it("Should be searchable", async () => {
+                const getResponse = await client.search({q: `description=${aggregateId} AND completed:false`});
+                expect(getResponse.statusCode).to.be(200);
+                expect(getResponse.body.results).to.have.length(1);
+                const item = getResponse.body.results[0];
+                expect(item).to.eql({
+                    title: "Test",
+                    completed: false,
+                    createdAt: item.createdAt,
+                    description: `blah blah ${aggregateId}`
+                });
+            });
+        });
+
         context("When the Todo is completed", () => {
 
-            let completeResponse: RequestResponse;
+            let completeResponse: FullResponse;
 
             beforeEach(async () => {
                 const completeCommand = {
                     name: "TodoComplete",
                     aggregateId: aggregateId
                 };
-                completeResponse = await SystemTestSetup.todoApiClient.sendCommand(completeCommand);
+                completeResponse = await client.sendCommand(completeCommand);
             });
 
             it("Should return an ok response", async () => {
@@ -47,7 +84,7 @@ describe("Given the Todo API", () => {
                     name: "TodoComplete",
                     aggregateId: aggregateId
                 };
-                const completeResponseTwice = await SystemTestSetup.todoApiClient.sendCommand(completeCommand);
+                const completeResponseTwice = await client.sendCommand(completeCommand);
                 expect(completeResponseTwice.statusCode).to.be(400);
                 expect(completeResponseTwice.body).to.eql({
                     ok: false,

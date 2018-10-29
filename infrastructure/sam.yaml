@@ -26,6 +26,41 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: !Ref EventsTable
 
+  TodoSearch:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../dist/TodoSearch.zip
+      Handler: index.handler
+      Runtime: nodejs8.10
+      MemorySize: 128
+      Timeout: 15
+      Events:
+        Search:
+          Type: 'Api'
+          Properties:
+            Path: '/todo'
+            Method: 'get'
+        Get:
+          Type: 'Api'
+          Properties:
+            Path: '/todo/{id}'
+            Method: 'get'
+      Environment:
+        Variables:
+          ElasticsearchDomainEndpoint: !GetAtt ElasticsearchDomain.DomainEndpoint
+      Policies:
+        - Version: 2012-10-17
+          Statement:
+            - Effect: Allow
+              Action:
+                - es:DescribeElasticsearchDomain
+                - es:ESHttpHead
+                - es:ESHttpGet
+              Resource: !Join
+                - ''
+                - - !GetAtt ElasticsearchDomain.DomainArn
+                  - /*
+
   TodoQueryModelUpdater:
     Type: AWS::Serverless::Function
     Properties:

@@ -1,15 +1,10 @@
 import { DynamoDBStreamEvent } from "aws-lambda";
 import { Converter } from "aws-sdk/clients/dynamodb";
-import { Client } from "elasticsearch";
-import * as HttpAmazonESConnector from "http-aws-es";
 import { IPublishedEvent } from "../../cqrs/IEvent";
 import { SearchableTodoRepository } from "../../todo/query/SearchableTodoRepository";
 import { TodoReadModel } from "../../todo/query/TodoQueryModel";
+import { esClient } from "../esClient";
 
-const esClient = new Client({
-    host: [`https://${process.env.ElasticsearchDomainEndpoint}`],
-    connectionClass: HttpAmazonESConnector
-});
 const readModel = new TodoReadModel(new SearchableTodoRepository(esClient));
 
 export async function handler(evt: DynamoDBStreamEvent): Promise<void> {
