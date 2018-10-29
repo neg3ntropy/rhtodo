@@ -22,7 +22,8 @@ describe("Given the ElasticRepository", () => {
     beforeEach(async () => {
         esClient = new Client({
             host: [`https://${IntegrationTestSetup.elasticsearchDomainEndpoint}`],
-            connectionClass: HttpAmazonESConnector
+            connectionClass: HttpAmazonESConnector,
+            log: "trace"
         });
         await esClient.indices.delete({index: "test"});
         sut = new TestElasticRepository(esClient);
@@ -42,8 +43,8 @@ describe("Given the ElasticRepository", () => {
         });
 
         it("Should be searcheable", async () => {
-            const retrieved = await sut.get("id");
-            expect(retrieved).to.eql(item);
+            const retrieved = await sut.search({q: "attribute:test", method: "GET"});
+            expect(retrieved).to.eql([item]);
         });
 
         context("When is deleted", () => {

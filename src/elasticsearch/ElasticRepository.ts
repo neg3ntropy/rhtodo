@@ -1,4 +1,6 @@
-import { Client } from "elasticsearch";
+import { Client, SearchParams } from "elasticsearch";
+
+export type ISearchParams = SearchParams;
 
 export abstract class ElasticRepository<T> {
 
@@ -9,12 +11,12 @@ export abstract class ElasticRepository<T> {
 
     public async get(id: string): Promise<T|undefined> {
         try {
-            const resp = await this.esClient.get({
+            const resp = await this.esClient.get<T>({
                 index: this.index,
                 type: this.type,
                 id: id,
             });
-            return resp._source as T;
+            return resp._source;
         } catch (error) {
             if (error.statusCode === 404) {
                 return undefined;
@@ -28,6 +30,7 @@ export abstract class ElasticRepository<T> {
             index: this.index,
             type: this.type,
             id: id,
+            refresh: "wait_for",
             body: item
         });
     }
@@ -51,15 +54,17 @@ export abstract class ElasticRepository<T> {
         });
     }
 
-    public async search(id: string, match: Partial<T>): Promise<T[]> {
-        const resp = await this.esClient.search({
-            index: "test1", type: "todo",
-            body: {
-                query: {
-                  match: match
-                }
-              }
+    public async search(searchParams: ISearchParams): Promise<T[]> {
+        const resp = await this.esClient.search<T>({
+            ...this.defaultSearchParams(),
+            ...searchParams,
+            index: this.index,
+            type: this.type,
         });
-        return resp.hits.hits.map(h => h._source as T);
+        return resp.hits.hits.map(h => h._source);
+    }
+
+    protected defaultSearchParams(): ISearchParams {
+        return {};
     }
 }
