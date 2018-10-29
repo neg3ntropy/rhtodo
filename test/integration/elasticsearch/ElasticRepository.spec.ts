@@ -23,8 +23,8 @@ describe("Given the ElasticRepository", () => {
     beforeEach(async () => {
         esClient = new Client({
             host: [`https://${IntegrationTestSetup.elasticsearchDomainEndpoint}`],
-            connectionClass: HttpAmazonESConnector,
-            log: "trace"
+            connectionClass: HttpAmazonESConnector
+            // log: "trace"
         });
         await esClient.indices.delete({index: "test"});
         sut = new TestElasticRepository(esClient);
