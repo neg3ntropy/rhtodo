@@ -19,3 +19,7 @@ A list of possible improvements, ironically not tracked with the TODO app
 * more CRUD like http interface for commands
 * HATEOAS links in API responses
 * alerts
+* expose versions and support transactional commands
+* DNS for the iot endpoint
+* DNS for apigw stage
+* configure log group retention

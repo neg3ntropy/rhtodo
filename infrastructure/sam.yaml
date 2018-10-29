@@ -84,8 +84,9 @@ Resources:
       Environment:
         Variables:
           ElasticsearchDomainEndpoint: !GetAtt ElasticsearchDomain.DomainEndpoint
+          IotEndpointAddress: !GetAtt IotEndpoint.IotEndpointAddress
       Policies:
-        - Version: 2012-10-17
+        - Version: '2012-10-17'
           Statement:
             - Effect: Allow
               Action:
@@ -95,6 +96,14 @@ Resources:
                 - ''
                 - - !GetAtt ElasticsearchDomain.DomainArn
                   - /*
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action: 'iot:Connect'
+              Resource: '*'
+            - Effect: Allow
+              Action: 'iot:Publish'
+              Resource: !Sub 'arn:aws:iot:${AWS::Region}:${AWS::AccountId}:topic/todo/*'
 
   EventsTable:
     Type: 'AWS::DynamoDB::Table'
@@ -138,6 +147,28 @@ Resources:
       SnapshotOptions:
         AutomatedSnapshotStartHour: '0'
 
+  IotEndpointProvider:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: IotEndpointProvider
+      Handler: IotEndpointProvider.handler
+      Runtime: nodejs6.10
+      CodeUri: .
+      MemorySize: 128
+      Timeout: 3
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+              - iot:DescribeEndpoint
+            Resource:
+              - '*'
+  IotEndpoint:
+    Type: 'Custom::IotEndpoint'
+    Properties:
+      ServiceToken: !GetAtt IotEndpointProvider.Arn
+
 Outputs:
   ApiRoot:
     Description: "API root"
@@ -145,3 +176,6 @@ Outputs:
   ElasticsearchDomainEndpoint:
     Description: "Endpoint for Elasticsearch"
     Value: !GetAtt ElasticsearchDomain.DomainEndpoint
+  IotEndpointAddress:
+    Description: "Endpoint for AWS IoT"
+    Value: !GetAtt IotEndpoint.IotEndpointAddress

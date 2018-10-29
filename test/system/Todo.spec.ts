@@ -3,6 +3,7 @@ import { FullResponse } from "request-promise-native";
 import { v4 as uuid } from "uuid";
 import { SystemTestSetup } from "./SystemTestSetup";
 import { TodoApiClient } from "./TodoApiClient";
+import { TodoNotificationClient } from "./TodoNotificationClient";
 
 describe("Given the Todo API", () => {
 
@@ -10,7 +11,9 @@ describe("Given the Todo API", () => {
 
         let createResponse: FullResponse;
         let aggregateId: string;
-        let client: TodoApiClient;
+        let apiClient: TodoApiClient;
+        let notificationClient: TodoNotificationClient;
+        let changeNotificationPromise: Promise<any>;
 
         beforeEach(async () => {
             aggregateId = uuid();
@@ -20,8 +23,12 @@ describe("Given the Todo API", () => {
                 title: "Test",
                 description: `blah blah ${aggregateId}`
             };
-            client = SystemTestSetup.todoApiClient;
-            createResponse = await client.sendCommand(createCommand);
+            apiClient = SystemTestSetup.todoApiClient;
+            notificationClient = SystemTestSetup.todoNotificationClient;
+
+            await notificationClient.subscribe("todo/watch/+");
+            changeNotificationPromise = notificationClient.waitNotification(n => n.aggregateId === aggregateId);
+            createResponse = await apiClient.sendCommand(createCommand);
         });
 
         it("Should return an ok response", async () => {
@@ -32,11 +39,11 @@ describe("Given the Todo API", () => {
         context("When the change notification is received", () => {
 
             beforeEach(async () => {
-                await new Promise(resolve => setTimeout(resolve, 2000)); // TODO websocket
+                await changeNotificationPromise;
             });
 
             it("Should be gettable", async () => {
-                const getResponse = await client.get(aggregateId);
+                const getResponse = await apiClient.get(aggregateId);
                 expect(getResponse.statusCode).to.be(200);
                 const item = getResponse.body;
                 expect(item).to.have.property("createdAt");
@@ -50,7 +57,7 @@ describe("Given the Todo API", () => {
             });
 
             it("Should be searchable", async () => {
-                const getResponse = await client.search({q: `description=${aggregateId} AND completed:false`});
+                const getResponse = await apiClient.search({q: `description=${aggregateId} AND completed:false`});
                 expect(getResponse.statusCode).to.be(200);
                 expect(getResponse.body.results).to.have.length(1);
                 const item = getResponse.body.results[0];
@@ -73,7 +80,7 @@ describe("Given the Todo API", () => {
                     name: "TodoComplete",
                     aggregateId: aggregateId
                 };
-                completeResponse = await client.sendCommand(completeCommand);
+                completeResponse = await apiClient.sendCommand(completeCommand);
             });
 
             it("Should return an ok response", async () => {
@@ -86,7 +93,7 @@ describe("Given the Todo API", () => {
                     name: "TodoComplete",
                     aggregateId: aggregateId
                 };
-                const completeResponseTwice = await client.sendCommand(completeCommand);
+                const completeResponseTwice = await apiClient.sendCommand(completeCommand);
                 expect(completeResponseTwice.statusCode).to.be(400);
                 expect(completeResponseTwice.body).to.eql({
                     ok: false,

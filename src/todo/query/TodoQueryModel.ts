@@ -4,12 +4,12 @@ import * as events from "../TodoEvents";
 import { SearchableTodoRepository } from "./SearchableTodoRepository";
 import { WithId } from "../../elasticsearch/ElasticRepository";
 
-export class TodoReadModel {
+export class TodoQueryModel {
 
     constructor(private readonly repository: SearchableTodoRepository) {}
 
     public async applyEvent(event: IPublishedEvent): Promise<void> {
-        return dispatch<Promise<void>, IPublishedEvent>(this, event, () => Promise.resolve());
+        await dispatch<Promise<void>, IPublishedEvent>(this, event, () => Promise.resolve());
     }
 
     protected async onTodoCreated(event: events.TodoCreated & IPublishedEvent): Promise<void> {
