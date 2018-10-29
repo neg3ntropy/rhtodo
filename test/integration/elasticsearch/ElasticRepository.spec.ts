@@ -7,6 +7,7 @@ import { IntegrationTestSetup } from "../IntegrationTestSetup";
 describe("Given the ElasticRepository", () => {
 
     interface Test {
+        readonly _id: string;
         readonly attribute: string;
         readonly patch?: string;
     }
@@ -31,10 +32,10 @@ describe("Given the ElasticRepository", () => {
 
     context("When an item is indexed", () => {
 
-        const item: Test = {attribute: "test"};
+        const item: Test = {_id: "id", attribute: "test"};
 
         beforeEach(async () => {
-            await sut.upsert("id", item);
+            await sut.upsert(item);
         });
 
         it("Should be retrievable by id", async () => {
@@ -59,15 +60,14 @@ describe("Given the ElasticRepository", () => {
         });
 
         context("When updated partially", () => {
-            const patch: Partial<Test> = {patch: "patch"};
 
             beforeEach(async () => {
-                await sut.patch("id", patch);
+                await sut.patch({_id: "id", patch: "patch"});
             });
 
             it("Should merge the modifications", async () => {
                 const retrieved = await sut.get("id");
-                expect(retrieved).to.eql({...item, ...patch});
+                expect(retrieved).to.eql({...item, patch: "patch"});
             });
         });
     });

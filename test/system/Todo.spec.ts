@@ -41,6 +41,7 @@ describe("Given the Todo API", () => {
                 const item = getResponse.body;
                 expect(item).to.have.property("createdAt");
                 expect(item).to.eql({
+                    _id: aggregateId,
                     title: "Test",
                     completed: false,
                     createdAt: item.createdAt,
@@ -54,6 +55,7 @@ describe("Given the Todo API", () => {
                 expect(getResponse.body.results).to.have.length(1);
                 const item = getResponse.body.results[0];
                 expect(item).to.eql({
+                    _id: aggregateId,
                     title: "Test",
                     completed: false,
                     createdAt: item.createdAt,

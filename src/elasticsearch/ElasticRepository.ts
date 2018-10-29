@@ -2,7 +2,16 @@ import { Client, SearchParams } from "elasticsearch";
 
 export type ISearchParams = SearchParams;
 
-export abstract class ElasticRepository<T> {
+export interface WithId {
+    _id: string;
+}
+
+interface Hit<T> {
+    readonly _id: string;
+    readonly _source: T;
+}
+
+export abstract class ElasticRepository<T extends WithId & object> {
 
     protected abstract readonly type: string;
     protected abstract readonly index: string;
@@ -16,7 +25,7 @@ export abstract class ElasticRepository<T> {
                 type: this.type,
                 id: id,
             });
-            return resp._source;
+            return this.fromHit(resp);
         } catch (error) {
             if (error.statusCode === 404) {
                 return undefined;
@@ -25,23 +34,24 @@ export abstract class ElasticRepository<T> {
         }
     }
 
-    public async upsert(id: string, item: T): Promise<void> {
+    public async upsert(item: T): Promise<void> {
         await this.esClient.index({
             index: this.index,
             type: this.type,
-            id: id,
+            id: item._id,
             refresh: "wait_for",
-            body: item
+            body: this.toDocument(item)
         });
     }
 
-    public async patch(id: string, item: Partial<T>): Promise<void> {
+    public async patch(item: Partial<T> & WithId): Promise<void> {
         await this.esClient.update({
             index: this.index,
             type: this.type,
-            id: id,
+            id: item._id,
+            refresh: "wait_for",
             body: {
-                doc: item
+                doc: this.toDocument(item)
             }
         });
     }
@@ -61,10 +71,22 @@ export abstract class ElasticRepository<T> {
             index: this.index,
             type: this.type,
         });
-        return resp.hits.hits.map(h => h._source);
+        return resp.hits.hits.map(h => this.fromHit(h));
     }
 
     protected defaultSearchParams(): ISearchParams {
         return {};
+    }
+
+    private fromHit(hit: Hit<T>): T {
+        const item = hit._source;
+        item._id = hit._id;
+        return item;
+    }
+
+    private toDocument(item: WithId): T {
+        const document = {...item};
+        delete document._id;
+        return document as T;
     }
 }
